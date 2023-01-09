@@ -90,3 +90,18 @@ result=$(run_policyGen common-pgt.yaml 2>/dev/null)
 tc="test_config_dest_dir_is_given"
 result=$(run_policyGen common-pgt.yaml outDir/ 2>/dev/null)
 [[ $result =~ "Generating configuration CRs into ${MOUNT_DIR}/outDir" ]] && pass $tc || fail $tc
+
+# source-crs test cases
+SOURCE_CRS_DIR="${test_script_dir}/../../source-crs"
+
+tc="test_PerformanceProfile_and_PerformanceProfileConfigurablePower_in_sync"
+expected_diff=$(cat <<-END
+  - "cpufreq.default_governor=schedutil"
+  workloadHints:
+      realTime: true
+      highPowerConsumption: false
+      perPodPowerManagement: true
+END
+)
+result=$(grep -Fxvf ${SOURCE_CRS_DIR}/PerformanceProfile.yaml ${SOURCE_CRS_DIR}/PerformanceProfileConfigurablePower.yaml)
+[[ "$result" == "$expected_diff" ]] && pass $tc || fail $tc
